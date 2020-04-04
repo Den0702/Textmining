@@ -10,11 +10,12 @@ setwd(workDir)
 # . - to jest katalog roboczy, a nie bieżący
 inputDir <- ".\\data"
 outputDir <- ".\\results"
-scriptDir <- ".\\scripts"
+scriptsDir <- ".\\scripts"
 workspaceDir <- ".\\workspaces"
 
 #utworzy katalog 
 dir.create(outputDir, showWarnings = FALSE)
+dir.create(workspaceDir, showWarnings = FALSE)
 
 #utworzenie korpusu dokumentów - chcemy do input dir dokleić ścieżkę dostępu, ale ta zmienna zawiera tylko adres
 corpusDir <- paste(inputDir, "\\",  "Literatura - streszczenia - oryginal", sep = "")
@@ -53,47 +54,55 @@ corpus <- tm_map(corpus, removeWords, stoplist)
 corpus <- tm_map(corpus, stripWhitespace) # stripWhitespace jest na końcu, bo mogą zostać nadmiarowe "białe znaki"
 # bo funkcja removeWords zamienia usuwane przez siebie znaki na spacje
 
-remove_char <- content_transformer(
+#funcja obudowana w content_transformer, korzystamy z lambda-funkcji
+removeChar <- content_transformer(
   function(x, pattern, replacement) 
-    gsub(pattern, replacement, x)
+    gsub(pattern, replacement, x)#zamieniamy pattern na replacement
   )
 
 #usunięcie "em dash" i 3/4 z tekstów
-corpus <- tm_map(corpus, remove_char, intToUtf8(8722), "")
-corpus <- tm_map(corpus, remove_char, intToUtf8(190), "")
+corpus <- tm_map(corpus, removeChar, intToUtf8(8722), "")
+corpus <- tm_map(corpus, removeChar, intToUtf8(190), "")
 
 #lematyzacja - sprowadzenie do formy
 polish <- dictionary(lang = "pl_PL")
 
 lemmatize <- function(text){
-  simple_text <- str_trim(as.character(text[1]))
-  parsed_text <- strsplit(simple_text, split = " ")
-  new_text_vec <- hunspell_stem(parsed_text[[1]], dict = polish)
-  for (i in 1:length(new_text_vec)){
-    if(length(new_text_vec[[i]]) == 0) new_text_vec[i] <- parsed_text[[1]][i]
-    if(length(new_text_vec[[i]]) > 1) new_text_vec[i] <- new_text_vec[[i]][1]
+  simpleText <- str_trim(as.character(text[1]))#as.character - to co przychodzi jako text konwertuje to na string
+                            #str_trim -usuwanie w ten sposób białych znaków od poczatku do konca - dobra praktyka
+  parsedText <- strsplit(simpleText, split = " ")#parsedText - lista, dzielimy tekst na tokeny?, gdzie spacja jest czynnikiem separujacym
+                                              #dzieli słowa z tekstu do wektora(każdy element to pojedyńcze słowo)
+  newTextVec <- hunspell_stem(parsedText[[1]], dict = polish)#newTextVec - przechowuje formy podstawowe poszczególnych słów wektora
+  for (i in 1:length(newTextVec)){                   #hunspell_stem - zwraca listę słów w formie podstawowej
+    if(length(newTextVec[[i]]) == 0) newTextVec[i] <- parsedText[[1]][i]#kiedy mamy jedną formę podstawową, to bierzemy oryginalne
+    if(length(newTextVec[[i]]) > 1) newTextVec[i] <- newTextVec[[i]][1]#newTextVec[[i]]) > 1 - więcje niż 1 forma podstawowa, 
+                                                                              #to bieżemy pierwszy element z (każdej?)listy
   }
-  new_text <- paste(new_text_vec, collapse = " ")
-  return(new_text)
+  newText <- paste(newTextVec, collapse = " ")#łączymy słowa do jednego stringu używając spacji jako łącznika
+  return(newText)                              #czyli konwertuje wektor do tekstu
 }
 
-corpus <- tm_map(corpus, content_transformer(lemmatize))
+corpus <- tm_map(corpus, content_transformer(lemmatize))#jest przekazywany tekst, nie dokument
 #bedziemy siegac metadanych w pliku
-cut_extentions <- function(document){
-  meta(document, "id") <- gsub(pattern = "\\.txt$", "", meta(document, "id"))
+#pozbywamy się rozszerzeń, bo one potem i tak zostaną dodane
+cutExtentions <- function(document){
+  #chcemy metadaną o id dokumentu podmienić na
+  meta(document, "id") <- gsub(pattern = "\\.txt$", "", meta(document, "id"))#gsub nie zmienia tekstu podawanego jako parametr,
+  #dlatego, jeśli chcemy zachować zmianę, to musimy z powrotem przypisać
   return(document)
 }
 
-corpus <- tm_map(corpus, cut_extentions)
+corpus <- tm_map(corpus, cutExtentions)
 
-preprocessed_dir <- paste(
+#eksport przetworzonego korpusu do plików tekstowych
+preprocessedDir <- paste(
   outputDir,
   "\\",
   "Literatura - streszczenia - przetworzone",
   sep = ""
 )
-dir.create(preprocessed_dir, showWarnings = FALSE)
-writeCorpus(corpus, path = preprocessed_dir)
+dir.create(preprocessedDir, showWarnings = FALSE)
+writeCorpus(corpus, path = preprocessedDir)
 #writeLines(as.character(corpus[[1]]))
 
 
