@@ -17,7 +17,12 @@ dir.create(outputDir, showWarnings = FALSE)
 dir.create(workspaceDir, showWarnings = FALSE)
 
 #utworzenie korpusu dokumentów - chcemy do input dir dokleić ścieżkę dostępu, ale ta zmienna zawiera tylko adres
-corpusDir <- paste(inputDir, "\\",  "Literatura - streszczenia - przetworzone", sep = "")
+corpusDir <- paste(
+  inputDir, 
+  "\\",  
+  "Literatura - streszczenia - przetworzone", 
+  sep = ""
+  )
 
 #VCorpus - tworzy obiekt korpusu dokumentów
 corpus <- VCorpus(
@@ -46,7 +51,7 @@ dtmTfAll <- DocumentTermMatrix(corpus)
 tdmTfidfAll <- TermDocumentMatrix(
   corpus,
   control = list(
-    weighting = weightBin
+    weighting = weightTfIdf
   )
 )
 
@@ -93,11 +98,11 @@ tdmTfidfBoundsMatrix <- as.matrix(tdmTfidfBounds)
 dtmTfidfBoundsMatrix <- as.matrix(dtmTfidfBounds)
 
 #eksport macierzy do pliku .csv
-#matrixFile <- paste(
- # outputDir,
-  #"\\",
-  #"Literatura - streszczenia - przetworzone",
-  #sep = ""
-#)
-#write.table(tdmTfidfBoundsMatrix, file = matrixFile, sep = ";", dec = ",", col.names = NA)
+matrixFile <- paste(
+  outputDir,
+  "\\",
+  "Literatura - streszczenia - przetworzone",
+  sep = ""
+)
+write.table(tdmTfidfBoundsMatrix, file = matrixFile, sep = ";", dec = ",", col.names = NA)
 
