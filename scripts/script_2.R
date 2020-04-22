@@ -93,11 +93,11 @@ tdmTfidfBoundsMatrix <- as.matrix(tdmTfidfBounds)
 dtmTfidfBoundsMatrix <- as.matrix(dtmTfidfBounds)
 
 #eksport macierzy do pliku .csv
-#matrixFile <- paste(
- # outputDir,
-  #"\\",
-  #"Literatura - streszczenia - przetworzone",
-  #sep = ""
-#)
-#write.table(tdmTfidfBoundsMatrix, file = matrixFile, sep = ";", dec = ",", col.names = NA)
+matrixFile <- paste(
+  outputDir,
+  "\\",
+  "tdmTfidfBounds.csv",
+  sep = ""
+)
+write.table(tdmTfidfBoundsMatrix, file = matrixFile, sep = ";", dec = ",", col.names = NA)
 

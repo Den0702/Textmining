@@ -18,7 +18,12 @@ dir.create(outputDir, showWarnings = FALSE)
 dir.create(workspaceDir, showWarnings = FALSE)
 
 #utworzenie korpusu dokumentów - chcemy do input dir dokleić ścieżkę dostępu, ale ta zmienna zawiera tylko adres
-corpusDir <- paste(inputDir, "\\",  "Literatura - streszczenia - oryginal", sep = "")
+corpusDir <- paste(
+    inputDir, 
+    "\\",  
+    "Literatura - streszczenia - oryginal", 
+     sep = ""
+   )
 
 #VCorpus - tworzy obiekt korpusu dokumentów
 corpus <- VCorpus(
@@ -43,7 +48,8 @@ stoplistFile <- paste(
   inputDir,                                            # funkcja paste zwraca string
   "\\", 
   "stopwords_pl.txt", 
-  sep = "")
+  sep = ""
+  )
 
 stoplist <- readLines(# wczytuje po kolei linijki z pliku do listy(nie do ciągłego tekstu)
   stoplistFile,
@@ -68,7 +74,7 @@ corpus <- tm_map(corpus, removeChar, intToUtf8(190), "")
 polish <- dictionary(lang = "pl_PL")
 
 lemmatize <- function(text){
-  simpleText <- str_trim(as.character(text[1]))#as.character - to co przychodzi jako text konwertuje to na string
+  simpleText <- str_trim(as.character(text))#as.character - to co przychodzi jako text konwertuje to na string
                             #str_trim -usuwanie w ten sposób białych znaków od poczatku do konca - dobra praktyka
   parsedText <- strsplit(simpleText, split = " ")#parsedText - lista, dzielimy tekst na tokeny?, gdzie spacja jest czynnikiem separujacym
                                               #dzieli słowa z tekstu do wektora(każdy element to pojedyńcze słowo)
